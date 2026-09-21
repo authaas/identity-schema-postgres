@@ -1,41 +1,28 @@
-# auth migrations
+# identity-schema-postgres
 
-The schema for the `authentication` database, which the authentication system's
-services share.
-
-A service does not map one to one with a table. `register.md` commits a
-principal and a credential record together, with the credential's reference to
-the principal as a stored constraint, and a foreign key cannot span databases —
-so the service boundary is not a database boundary, and the schema belongs to
-none of them.
+The identity's PostgreSQL schema, and the statements the identity data service
+runs against it.
 
 ## Layout
 
-Versioned SQL in pairs, applied in order:
-
 ```text
-000n_*.up.sql
-000n_*.down.sql
+migrations/   versioned pairs, 000n_*.up.sql and 000n_*.down.sql, applied in order
+queries/      one statement per file, named for the data RPC it serves
 ```
 
-The `up` makes the change and the `down` reverses it. Nothing is edited once it
-has been applied anywhere; a change to an applied migration is a new pair.
+Nothing under `migrations/` is edited once it has been applied anywhere; a
+change to an applied migration is a new pair.
 
 ## Applying
 
-[golang-migrate](https://github.com/golang-migrate/migrate) reads its own
-`schema_migrations` table to decide what is outstanding, applies the `up` files
-newer than that in order, and exits.
-
 ```bash
-migrate -path . -database "$DATABASE_URL" up
+migrate -path migrations -database "$DATABASE_URL" up
 ```
 
-The published `migrate/migrate` image runs exactly that, so a deployment runs it
-as a one-shot job rather than building anything.
+The published `migrate/migrate` image runs exactly that.
 
-## Access
+## Generating
 
-Everything connects as the default `postgres` account with no password.
-Authenticating database access is defence in depth here and nothing depends on
-it. Separate accounts and grants are a later concern.
+This repository holds SQL only. Each language binding is generated in its own
+repository from a tag of this one: `identity-operations-postgres-pgx-go` runs
+sqlc over `migrations/` and `queries/`.
