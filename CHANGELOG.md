@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.0 - 2026-09-23
+#### Features
+- auth realms - (96a4030) - Nathan Blair
+
+- - -
+
 ## 0.1.1 - 2026-09-21
 #### Bug Fixes
 - glob it - (14f2e8e) - Nathan Blair
