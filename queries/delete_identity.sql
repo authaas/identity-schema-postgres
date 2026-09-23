@@ -1,2 +1,2 @@
 -- name: DeleteIdentity :execrows
-DELETE FROM principal WHERE id = $1;
+DELETE FROM identity_data.identity WHERE id = $1;
