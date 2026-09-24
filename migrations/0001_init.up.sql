@@ -28,11 +28,6 @@ CREATE TABLE identity_data.realm_membership (
     -- and for a machine identity, which authenticate by assumption.
     credentialable          BOOLEAN NOT NULL,
 
-    -- The UNIX seconds bounding when this membership may authenticate. NULL is
-    -- unbounded at that end.
-    nbf                     BIGINT,
-    exp                     BIGINT,
-
     PRIMARY KEY (realm_id, identity_id),
 
     -- The target of credential's foreign key, which pins credentialable to
@@ -62,25 +57,8 @@ CREATE TABLE identity_data.group_membership (
 
 CREATE INDEX group_membership_member ON identity_data.group_membership (realm_id, member_identity_id);
 
--- Whether a membership exists and is inside its validity window.
-CREATE FUNCTION identity_data.assumable(realm UUID, identity UUID)
-RETURNS BOOLEAN
-LANGUAGE sql
-STABLE
-AS $$
-    SELECT EXISTS (
-        SELECT 1
-          FROM identity_data.realm_membership
-         WHERE realm_membership.realm_id = realm
-           AND realm_membership.identity_id = identity
-           AND (realm_membership.nbf IS NULL OR realm_membership.nbf <= EXTRACT(EPOCH FROM now())::BIGINT)
-           AND (realm_membership.exp IS NULL OR realm_membership.exp > EXTRACT(EPOCH FROM now())::BIGINT)
-    );
-$$;
-
 -- Taking on a membership: its grant becomes the digest presented and its last
--- authenticated date advances, while it is inside its validity window. Answers
--- whether it did.
+-- authenticated date advances. Answers whether the membership exists.
 --
 -- Every path that concludes in a grant calls this, composed into the statement
 -- that performs whatever else that path commits, so the two land together.
@@ -93,9 +71,7 @@ BEGIN
        SET grant_hash = digest,
            last_authenticated_date = at
      WHERE realm_membership.realm_id = realm
-       AND realm_membership.identity_id = identity
-       AND (realm_membership.nbf IS NULL OR realm_membership.nbf <= EXTRACT(EPOCH FROM now())::BIGINT)
-       AND (realm_membership.exp IS NULL OR realm_membership.exp > EXTRACT(EPOCH FROM now())::BIGINT);
+       AND realm_membership.identity_id = identity;
 
     RETURN FOUND;
 END;
