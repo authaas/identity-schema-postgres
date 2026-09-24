@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.3.0 - 2026-09-24
+#### Features
+- assumable comes from policy - (9531ea9) - Nathan Blair
+
+- - -
+
 ## 0.2.0 - 2026-09-23
 #### Features
 - auth realms - (96a4030) - Nathan Blair
